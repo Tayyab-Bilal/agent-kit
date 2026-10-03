@@ -1,0 +1,14 @@
+{"question": "The assistant wants to run action \"archive_notes\" with exactly these arguments: {\"ids\": [7]}. Reply yes to allow it or no to cancel.", "reply": "yes", "expected": "yes"}
+{"question": "The assistant wants to run action \"archive_notes\" with exactly these arguments: {\"ids\": [7]}. Reply yes to allow it or no to cancel.", "reply": "no", "expected": "no"}
+{"question": "The assistant wants to run action \"archive_notes\" with exactly these arguments: {\"ids\": [7]}. Reply yes to allow it or no to cancel.", "reply": "yes, but archive note 9 instead", "expected": "unclear"}
+{"question": "The assistant wants to run action \"archive_notes\" with exactly these arguments: {\"ids\": [7]}. Reply yes to allow it or no to cancel.", "reply": "yes, and note 8 too", "expected": "unclear"}
+{"question": "The assistant wants to run action \"archive_notes\" with exactly these arguments: {\"ids\": [7]}. Reply yes to allow it or no to cancel.", "reply": "the other one", "expected": "unclear"}
+{"question": "The assistant wants to run action \"archive_notes\" with exactly these arguments: {\"ids\": [7]}. Reply yes to allow it or no to cancel.", "reply": "archive note 9", "expected": "unclear"}
+{"question": "The assistant wants to run action \"archive_notes\" with exactly these arguments: {\"ids\": [7]}. Reply yes to allow it or no to cancel.", "reply": "yes to note 7 only", "expected": "unclear"}
+{"question": "The assistant wants to run action \"archive_notes\" with exactly these arguments: {\"ids\": [7]}. Reply yes to allow it or no to cancel.", "reply": "نعم", "expected": "yes"}
+{"question": "The assistant wants to run action \"archive_notes\" with exactly these arguments: {\"ids\": [7]}. Reply yes to allow it or no to cancel.", "reply": "نعم لكن الملاحظة 9", "expected": "unclear"}
+{"question": "The assistant wants to run action \"publish_workflow\" with exactly these arguments: {\"workflow_id\": \"wf-1\"}. Reply yes to allow it or no to cancel.", "reply": "yes", "expected": "yes"}
+{"question": "The assistant wants to run action \"publish_workflow\" with exactly these arguments: {\"workflow_id\": \"wf-1\"}. Reply yes to allow it or no to cancel.", "reply": "cancel", "expected": "no"}
+{"question": "The assistant wants to run action \"publish_workflow\" with exactly these arguments: {\"workflow_id\": \"wf-1\"}. Reply yes to allow it or no to cancel.", "reply": "yes, publish wf-2 instead", "expected": "unclear"}
+{"question": "The assistant wants to run action \"publish_workflow\" with exactly these arguments: {\"workflow_id\": \"wf-1\"}. Reply yes to allow it or no to cancel.", "reply": "no, publish wf-2", "expected": "unclear"}
+{"question": "The assistant wants to run action \"publish_workflow\" with exactly these arguments: {\"workflow_id\": \"wf-1\"}. Reply yes to allow it or no to cancel.", "reply": "نعم، لكن wf-2", "expected": "unclear"}
