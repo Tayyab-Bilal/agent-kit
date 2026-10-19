@@ -1,0 +1,23 @@
+name: workflow_helper
+description: Finds, checks, copies and (after the user confirms) edits, publishes, reverts and runs workflows in Acme Workspace.
+skill: SKILL.md
+tools:
+  - find_workflows
+  - diagnose_workflow
+  - copy_workflow
+  - edit_workflow
+  - publish_workflow
+  - revert_workflow
+  - run_workflow
+guarded_writes:
+  - tool: copy_workflow
+    item_key: new_name
+confirm_actions:
+  - edit_workflow
+  - publish_workflow
+  - revert_workflow
+  - run_workflow
+budget:
+  max_steps: 12
+  max_saves: 2
+  max_backend_calls: 15

@@ -1,0 +1,15 @@
+name: notes_curator
+description: Summarises and tidies a user's notes in Acme Workspace (lists, summarises, archives).
+skill: SKILL.md
+tools:
+  - list_notes
+  - save_note
+  - archive_notes
+guarded_writes:
+  - tool: save_note
+    item_key: title
+confirm_actions:
+  - archive_notes
+budget:
+  max_steps: 12
+  max_saves: 3
