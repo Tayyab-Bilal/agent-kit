@@ -4,7 +4,7 @@ import pytest
 
 from agent_kit.card import Budget
 from agent_kit.registry import ToolRegistry
-from agent_kit.same_item_guard import TransportError, SameItemGuard, WriteRefused
+from agent_kit.same_item_guard import SameItemGuard, TransportError, WriteRefused
 
 
 class Backend:

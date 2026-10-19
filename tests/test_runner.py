@@ -5,7 +5,7 @@ import pytest
 from agent_kit.card import Budget
 from agent_kit.fakes import ScriptedLLM
 from agent_kit.llm import Final
-from agent_kit.same_item_guard import TransportError, SameItemGuard
+from agent_kit.same_item_guard import SameItemGuard, TransportError
 
 from .conftest import DONE, calls, tool_observations
 

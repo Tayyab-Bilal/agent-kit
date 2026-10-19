@@ -27,7 +27,8 @@ async def workflow_helper_story() -> None:
     tools = build_workflow_tools(store)
     registry = discover(BUILTIN_AGENTS, tools)
     agent = registry.agents["workflow_helper"]
-    card, gate, guard = agent.card, ConfirmGate(), SameItemGuard(tools, store.workflow_exists, agent.card.budget)
+    card, gate = agent.card, ConfirmGate()
+    guard = SameItemGuard(tools, store.workflow_exists, agent.card.budget)
     # The fake backend decides what each user may use. Dana has every tool this agent needs.
     opener = FakeBackendOpener(lambda user: tools, {"dana": set(card.tools)})
 
