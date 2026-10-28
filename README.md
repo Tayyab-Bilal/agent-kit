@@ -6,6 +6,48 @@ A small runtime for safe, multi-step specialist agents: one folder per agent, sa
 
 [![CI](https://github.com/Tayyab-Bilal/agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/Tayyab-Bilal/agent-kit/actions/workflows/ci.yml)
 
+## At a glance
+
+**What it is.** A small Python runtime for agents that take several steps and can change data. The safety rules (allow-list, budgets, write guard, user consent) are enforced in code, not in the prompt, and a new agent is one folder.
+
+**What is built** (in this repo, working and tested):
+
+- Runner loop and budgets: steps, tool calls, backend calls, saves and a deadline end the run. `runner.py:_run`, `card.py:Budget`
+- Write guard: a duplicate save of the same item returns the first result, a per-key lock and `asyncio.shield` protect an in-flight save, and an unclear error is checked with `exists`. `same_item_guard.py:SameItemGuard.save`
+- ConfirmGate: a risky action is stored with its exact arguments and a code-written question, and each pending id works once. `confirm.py:ConfirmGate.propose`, `ConfirmGate.resolve`
+- Consent judge, fail closed: only a bare yes confirms. "yes, but ..." is unclear, and an unclear verdict, a judge error or garbage cancels. `consent.py:RuleConsentJudge.judge`, `confirm.py:ConfirmGate.resolve`
+- Result store: big tool results go into per-task SQLite, and the model queries them with read-only SQL. A default-deny SQLite authorizer allows only reads. `handles.py:_authorizer`, `ResultStore.sql`
+- Agent spec validation: unknown keys are rejected, and a write tool that is neither guarded nor confirm-gated rejects the card. `card.py:AgentSpec.validate_against`, `registry.py:discover`
+- Adversarial test suite: a hostile scripted model tries to break each rule. `tests/adversarial/test_hostile_llm.py`
+
+**What is not built, or is simplified here:**
+
+- Only a scripted fake model (`ScriptedLLM`) and a rule-based judge (`RuleConsentJudge`) ship. No real model is called. `LLMConsentJudge` exists but is not run against a real model.
+- The backend is an in-memory fake, and `FakeBackendOpener` is not a real permission system.
+- Pending actions, the ledger and the locks live in process memory. A real deployment needs storage the model cannot write to, and a unique constraint in the backend.
+- The `exists` check can match an item that was there before the task, so idempotency is only as strong as that check.
+- The version stamp is a simple revision counter.
+- The JMESPath memory limit works on Linux only.
+- `workflow_helper` is small on purpose: three checks, no builder.
+
+**How a risky action flows:**
+
+1. The model asks for a risky tool, for example `archive_notes`. `runner.py:_dispatch` checks the allow-list and the arguments.
+2. Code does not run it. It stores the exact arguments with a version stamp and writes the question itself. `confirm.py:ConfirmGate.propose`
+3. The run ends with status `needs_input` and that question. `runner.py:_run`
+4. The user replies on the next turn. Only the pending id and the reply go back in. `runner.py:resume`
+5. The judge reads the code-written question and the user's reply. Nothing the agent model wrote reaches it. Anything but a clear yes cancels. `consent.py:RuleConsentJudge.judge`
+6. The gate checks that the id is unused and belongs to this task, then compares the version stamp. If the data changed, it asks again. `confirm.py:ConfirmGate.resolve`
+7. The stored arguments run, not anything the model or caller says now, and the result goes into the ledger. `runner.py:resume`
+
+**Attack suite.** `tests/adversarial/`, 20 attack tests (16 test functions, one parametrized over several SQL attacks).
+
+**Run it.**
+
+```bash
+.venv/bin/pytest -q    # 184 passed
+```
+
 ## The problem
 
 A chat orchestrator delegates work to "specialists" that are really one-shot LLM calls. Real tasks
@@ -33,8 +75,8 @@ user confirms, publishes and runs workflows).
   registered; the call routes through the guard (`same_item_guard.py`).
 - **Idempotent, shielded commits.** Same-item no-op, per-key lock, `asyncio.shield`, existence
   check after unclear errors, a ledger (`same_item_guard.py`).
-- **Confirm-first actions.** Code-written question, stored arguments, a judge that reads only the
-  user's reply, a version stamp re-check (`confirm.py`, `consent.py`).
+- **Confirm-first actions.** Code-written question, stored arguments, a judge that sees only the
+  code-written question and the user's reply, a version stamp re-check (`confirm.py`, `consent.py`).
 - **Budgets.** Steps, saves, tool calls, backend calls and a deadline (`card.Budget`).
 - **Asks when it must.** A built-in `ask_user` tool ends the run with `needs_input`.
 - **Orchestrator bridge with per-agent flags.** One generated delegate tool; nothing enabled means
@@ -190,7 +232,7 @@ so a backend unique constraint or idempotency key is still the real guarantee (s
 7. **Writes are shielded and checked, not blindly retried.** Why: a timeout does not say whether
    the write landed. Rejected: blind retry (duplicates); cancelling an in-flight commit (loses it).
 8. **Consent is decided by code, never the agent model.** A risky action is stored with exact
-   arguments and a code-written question; next turn a judge reads only the user's reply, then a
+   arguments and a code-written question; next turn a judge reads the code-written question and the user's reply (never the agent model's words), then a
    version stamp is re-checked and the **stored** arguments run. Rejected: letting the model ask
    and report back what the user said.
 9. **The judge is fail-closed.** Only a bare yes confirms; "yes, but ..." is unclear. An error or
